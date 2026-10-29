@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Min profil{% endblock %}
+
+{% block content %}
+<div class="section section--narrow">
+    <div class="profile-card">
+        <span class="avatar avatar--big">{{ g.bruger.navn|initialer }}</span>
+        <div class="profile-card__text">
+            <h2>{{ g.bruger.navn }}</h2>
+            <p>{{ g.bruger.uddannelse or 'Studerende' }} · {{ g.bruger.email }}</p>
+        </div>
+        <div class="profile-card__actions">
+            <a href="{{ url_for('indstillinger') }}" class="btn btn--outline btn--small">Indstillinger</a>
+            <form method="post" action="{{ url_for('logout') }}"><button class="btn btn--ghost-dark btn--small">Log ud</button></form>
+        </div>
+    </div>
+
+    <div class="stat-row">
+        <div><strong>{{ stats.opslag }}</strong><span>opslag</span></div>
+        <div><strong>{{ stats.events }}</strong><span>arrangementer</span></div>
+        <div><strong>{{ stats.bestillinger }}</strong><span>bestillinger</span></div>
+    </div>
+
+    <section class="panel">
+        <div class="panel__head"><h3>Mine arrangementer</h3></div>
+        <ul class="list">
+            {% for e in mine_events %}
+            <li><span class="list__date">{{ e.dato|paen_dato }}</span><div><strong>{{ e.titel }}</strong><small>kl. {{ e.tid }} · {{ e.sted }}</small></div></li>
+            {% else %}
+            <li class="empty">Du er ikke tilmeldt noget endnu. <a href="{{ url_for('social') }}#events">Se arrangementer</a></li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="panel">
+        <div class="panel__head"><h3>Kommende forudbestillinger</h3><p class="section__text">Maden står klar på dagen. Du kan annullere indtil afhentning.</p></div>
+        <ul class="list">
+            {% for b in kommende %}
+            <li>
+                <span class="list__date">{{ b.dato|paen_dato }}</span>
+                <div><strong>{{ b.ret }}</strong><small>Afhentning kl. {{ b.afhentning }} · nr. {{ b.id }}</small></div>
+                <span class="price price--small">{{ b.pris }} kr.</span>
+                <button class="btn btn--ghost-dark btn--tiny" data-annuller="{{ b.id }}">Annuller</button>
+            </li>
+            {% else %}
+            <li class="empty">Ingen kommende bestillinger. <a href="{{ url_for('index') }}#forudbestil">Forudbestil op til 7 dage frem</a></li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    {% if bestillinger %}
+    <section class="panel">
+        <div class="panel__head"><h3>Tidligere bestillinger</h3></div>
+        <ul class="list">
+            {% for b in bestillinger %}
+            <li><span class="list__date">{{ b.dato|paen_dato }}</span><div><strong>{{ b.ret }}</strong><small>Afhentet kl. {{ b.afhentning }} · nr. {{ b.id }}</small></div><span class="price price--small">{{ b.pris }} kr.</span></li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

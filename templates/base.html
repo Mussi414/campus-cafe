@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#e85d24">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Campus Café">
+    <title>{% block title %}Campus Café{% endblock %} | IBA Kolding</title>
+    <link rel="manifest" href="{{ url_for('manifest') }}">
+    <link rel="icon" href="{{ url_for('static', filename='icon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ static_url('style.css') }}">
+</head>
+<body class="{% block bodyclass %}{% endblock %}">
+
+{% macro ikon(navn) -%}
+    {%- if navn == 'hjem' -%}
+    <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+    {%- elif navn == 'social' -%}
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5M15 15.2c2.8.2 5 1.8 5 3.8"/></svg>
+    {%- elif navn == 'klokke' -%}
+    <svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/></svg>
+    {%- elif navn == 'profil' -%}
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.5 3.6-6 8-6s8 2.5 8 6"/></svg>
+    {%- elif navn == 'tandhjul' -%}
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+    {%- elif navn == 'hjerte' -%}
+    <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+    {%- elif navn == 'kalender' -%}
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    {%- elif navn == 'ur' -%}
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    {%- elif navn == 'mail' -%}
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+    {%- elif navn == 'pin' -%}
+    <svg viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>
+    {%- elif navn == 'logud' -%}
+    <svg viewBox="0 0 24 24"><path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M15 8l4 4-4 4M19 12H9"/></svg>
+    {%- endif -%}
+{%- endmacro %}
+
+    <!-- Topbar (desktop) -->
+    <nav class="nav">
+        <a href="{{ url_for('index') }}" class="nav__brand">
+            <span class="nav__logo">CC</span>
+            <span>Campus Café</span>
+        </a>
+        <ul class="nav__links">
+            <li><a href="{{ url_for('index') }}" class="{{ 'is-active' if request.endpoint == 'index' }}">Hjem</a></li>
+            <li><a href="{{ url_for('index') }}#menu">Menu</a></li>
+            <li><a href="{{ url_for('social') }}" class="{{ 'is-active' if request.endpoint == 'social' }}">Socialt</a></li>
+            {% if g.bruger %}
+            <li><a href="{{ url_for('notifikationer') }}" class="{{ 'is-active' if request.endpoint == 'notifikationer' }}">Notifikationer{% if g.ulaeste %} <span class="badge">{{ g.ulaeste }}</span>{% endif %}</a></li>
+            {% endif %}
+        </ul>
+        <div class="nav__user">
+            {% if g.bruger %}
+            <a href="{{ url_for('profil') }}" class="avatar avatar--small" title="Min profil">{{ g.bruger.navn|initialer }}</a>
+            <a href="{{ url_for('indstillinger') }}" class="nav__icon" title="Indstillinger">{{ ikon('tandhjul') }}</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn--primary btn--small">Log ind</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flash-beskeder -->
+    {% with beskeder = get_flashed_messages(with_categories=true) %}
+    {% if beskeder %}
+    <div class="flash-stack" id="flashStack">
+        {% for kategori, besked in beskeder %}
+        <div class="flash flash--{{ kategori }}">{{ besked }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p><strong>Campus Café</strong> · IBA Erhvervsakademi Kolding</p>
+        <p>God mad - godt fællesskab</p>
+        <p class="photo-credit">Fotos af IBA-bygningen: iba.dk</p>
+    </footer>
+
+    <!-- Bundmenu (mobil / app) -->
+    <nav class="tabbar">
+        <a href="{{ url_for('index') }}" class="{{ 'is-active' if request.endpoint == 'index' }}">{{ ikon('hjem') }}<span>Hjem</span></a>
+        <a href="{{ url_for('social') }}" class="{{ 'is-active' if request.endpoint == 'social' }}">{{ ikon('social') }}<span>Socialt</span></a>
+        <a href="{{ url_for('notifikationer') }}" class="{{ 'is-active' if request.endpoint == 'notifikationer' }}">{{ ikon('klokke') }}{% if g.ulaeste %}<i class="tabbar__dot"></i>{% endif %}<span>Beskeder</span></a>
+        <a href="{{ url_for('profil') if g.bruger else url_for('login') }}" class="{{ 'is-active' if request.endpoint in ('profil', 'login', 'opret') }}">{{ ikon('profil') }}<span>{{ 'Profil' if g.bruger else 'Log ind' }}</span></a>
+        <a href="{{ url_for('indstillinger') }}" class="{{ 'is-active' if request.endpoint == 'indstillinger' }}">{{ ikon('tandhjul') }}<span>Mere</span></a>
+    </nav>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>window.ER_LOGGET_IND = {{ 'true' if g.bruger else 'false' }}; window.LOGIN_URL = "{{ url_for('login') }}";</script>
+    <script src="{{ static_url('app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

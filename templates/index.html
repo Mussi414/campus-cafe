@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Hjem{% endblock %}
+
+{% block content %}
+<!-- Hero med IBA-bygningen -->
+<header class="hero" id="hjem">
+    <div class="hero__content">
+        <p class="hero__eyebrow">IBA Erhvervsakademi Kolding</p>
+        {% if g.bruger %}
+        <h1>Hej {{ g.bruger.navn.split()[0] }}.<br>Sulten?</h1>
+        <p class="hero__text">{{ makkere_i_dag }} studerende spiser sammen i dag. Hop med, eller se hvad køkkenet har lavet.</p>
+        {% else %}
+        <h1>God mad.<br>Godt fællesskab.</h1>
+        <p class="hero__text">Se dagens menu, mød andre studerende over frokosten og følg med i, hvad der sker på campus.</p>
+        {% endif %}
+        <div class="hero__actions">
+            <a href="#menu" class="btn btn--primary">Se dagens menu</a>
+            <a href="{{ url_for('social') }}#makker" class="btn btn--ghost">Find en frokostmakker</a>
+        </div>
+    </div>
+    <div class="hero__stats">
+        <div><strong>{{ menu|length }}</strong><span>retter i dag</span></div>
+        <div><strong>{{ makkere_i_dag }}</strong><span>spiser sammen</span></div>
+        <div><strong>{{ tilbud.pris }} kr.</strong><span>ugens tilbud</span></div>
+    </div>
+</header>
+
+<!-- Menu -->
+<section class="section" id="menu">
+    <div class="section__head">
+        <p class="section__eyebrow">{{ dag }} {{ dato }}</p>
+        <h2>Dagens menu</h2>
+        <p class="section__text">Friskt tilberedt hver morgen af kantinens køkken.
+            {% if g.bruger and kost != 'alt' %}Retter, der passer til din kostpræference ({{ kost }}), er markeret.{% endif %}</p>
+    </div>
+
+    <div class="menu-grid">
+        {% for ret in menu %}
+        <article class="card {{ 'card--dimmed' if g.bruger and not ret.passer }}">
+            <div class="card__media">
+                <img src="{{ ret.billede }}" alt="{{ ret.navn }}" loading="lazy">
+                <span class="card__tag">{{ ret.tag }}</span>
+                {% if g.bruger and ret.passer and kost != 'alt' %}<span class="card__tag card__tag--green">Passer til dig</span>{% endif %}
+            </div>
+            <div class="card__body">
+                <h3>{{ ret.navn }}</h3>
+                <p>{{ ret.beskrivelse }}</p>
+                <div class="card__footer">
+                    <span class="price">{{ ret.pris }} kr.</span>
+                    <button class="btn btn--primary btn--small" data-bestil="{{ ret.id }}" data-navn="{{ ret.navn }}">Forudbestil</button>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <div class="ugemenu" id="forudbestil">
+        <h3>Forudbestil op til 7 dage frem</h3>
+        <p class="section__text">Bestil i dag, så står maden klar, når du kommer. Du kan annullere igen fra din profil.</p>
+        <ul>
+            {% for d in dage %}
+            <li class="{{ 'is-today' if loop.first }} {{ 'is-closed' if not d.aaben }}">
+                <span class="ugemenu__dag">{{ d.label }}</span>
+                {% if d.aaben and d.ret %}
+                <span class="ugemenu__ret">{{ d.ret.navn }} <small>{{ d.ret.pris }} kr.</small></span>
+                <button class="btn btn--outline btn--tiny" data-bestil-dag="{{ d.iso }}" data-navn="{{ d.ret.navn }}" data-label="{{ d.label }}">Forudbestil</button>
+                {% else %}
+                <span class="ugemenu__ret">Lukket</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+
+<!-- Tilbud -->
+<section class="offer" id="tilbud" style="--offer-bg: url('{{ url_for('static', filename='images/iba-bygning.jpg') }}')">
+    <div class="offer__content">
+        <p class="section__eyebrow section__eyebrow--light">Ugens tilbud</p>
+        <h2>{{ tilbud.titel }}</h2>
+        <p>{{ tilbud.tekst }}</p>
+        <span class="offer__price">{{ tilbud.pris }} kr.</span>
+    </div>
+</section>
+
+<!-- Socialt teaser -->
+<section class="section">
+    <div class="teaser-grid">
+        <a href="{{ url_for('social') }}#makker" class="teaser">
+            <img src="{{ url_for('static', filename='images/iba-indendoers.jpg') }}" alt="Studerende på IBA">
+            <div class="teaser__body">
+                <p class="section__eyebrow">Frokostmakker</p>
+                <h3>Spis sammen med andre</h3>
+                <p>{{ makkere_i_dag }} har allerede meldt sig i dag. Vælg et tidspunkt og find bordet med skiltet.</p>
+            </div>
+        </a>
+        {% if naeste_event %}
+        <a href="{{ url_for('social') }}#events" class="teaser">
+            <img src="{{ naeste_event.billede }}" alt="{{ naeste_event.titel }}">
+            <div class="teaser__body">
+                <p class="section__eyebrow">Næste arrangement · {{ naeste_event.dato|paen_dato }}</p>
+                <h3>{{ naeste_event.titel }}</h3>
+                <p>{{ naeste_event.antal }} deltager allerede. Kl. {{ naeste_event.tid }} i {{ naeste_event.sted }}.</p>
+            </div>
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Info -->
+<section class="section section--tight" id="info">
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>Åbningstider</h3>
+            <ul class="hours">
+                {% for d, tid in aabningstider %}
+                <li><span>{{ d }}</span><span>{{ tid }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3>Find os</h3>
+            <p>Campus Café ligger i stueetagen ved hovedindgangen.</p>
+            <p>IBA Erhvervsakademi Kolding<br>Havneparken 1<br>6000 Kolding</p>
+        </div>
+        <div class="info-card">
+            <h3>Betaling</h3>
+            <p>Vi tager imod MobilePay og kort. Studiekort giver 10 % rabat på dagens ret.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Bestillings-dialog -->
+<dialog class="dialog" id="bestilDialog">
+    <form method="dialog" class="dialog__inner">
+        <h3>Forudbestil <span id="bestilNavn"></span></h3>
+        <p class="section__text">Vælg dag og tidspunkt, så står maden klar uden kø.</p>
+        <label class="field">Dag
+            <select id="bestilDato">
+                {% for d in dage if d.aaben %}
+                <option value="{{ d.iso }}">{{ d.label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="field">Afhentning
+            <select id="bestilTid">
+                {% for t in tidspunkter %}<option {{ 'selected' if t == '12:00' }}>{{ t }}</option>{% endfor %}
+            </select>
+        </label>
+        <div class="dialog__actions">
+            <button value="cancel" class="btn btn--ghost-dark">Annuller</button>
+            <button value="ok" class="btn btn--primary" id="bestilOk">Bekræft bestilling</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}

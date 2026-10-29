@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Notifikationer{% endblock %}
+
+{% block content %}
+<div class="section section--narrow">
+    <div class="section__head section__head--left">
+        <p class="section__eyebrow">Beskeder</p>
+        <h2>Notifikationer</h2>
+        <p class="section__text">
+            {% if g.indstillinger.kanal == 'email' %}
+            Du modtager beskeder som e-mail. Her kan du se dem, der er sendt (simuleret i prototypen).
+            {% elif not g.indstillinger.notifikationer %}
+            Notifikationer er slået fra. <a href="{{ url_for('indstillinger') }}">Slå dem til under indstillinger.</a>
+            {% else %}
+            Dine seneste beskeder fra Campus Café.
+            {% endif %}
+        </p>
+    </div>
+
+    {% if g.indstillinger.kanal == 'email' %}
+    <ul class="notif-list">
+        {% for m in emails %}
+        <li class="notif notif--mail">
+            <span class="notif__icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+            <div><strong>{{ m.emne }}</strong><p>{{ m.tekst }}</p><small>Sendt til {{ g.bruger.email }} · {{ m.oprettet|relativ_tid }}</small></div>
+        </li>
+        {% else %}
+        <li class="empty">Ingen e-mails sendt endnu.</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <ul class="notif-list">
+        {% for n in notifikationer %}
+        <li class="notif notif--{{ n.type }}">
+            <span class="notif__icon">
+                {% if n.type == 'makker' %}<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5M15 15.2c2.8.2 5 1.8 5 3.8"/></svg>
+                {% elif n.type == 'event' %}<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+                {% elif n.type == 'social' %}<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+                {% elif n.type == 'bestilling' %}<svg viewBox="0 0 24 24"><path d="M5 7h14l-1.5 12h-11zM9 7V5a3 3 0 0 1 6 0v2"/></svg>
+                {% else %}<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/></svg>{% endif %}
+            </span>
+            <div><p>{{ n.tekst }}</p><small>{{ n.oprettet|relativ_tid }}</small></div>
+        </li>
+        {% else %}
+        {% if g.indstillinger.kanal != 'email' %}<li class="empty">Du har ingen notifikationer endnu.</li>{% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

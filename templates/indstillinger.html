@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Indstillinger{% endblock %}
+
+{% block content %}
+{% set s = g.indstillinger %}
+<div class="section section--narrow">
+    <div class="section__head section__head--left">
+        <p class="section__eyebrow">Mere</p>
+        <h2>Indstillinger</h2>
+        <p class="section__text">Bestem selv, hvordan og hvornår Campus Café må kontakte dig.</p>
+    </div>
+
+    <form method="post" class="settings" id="settingsForm">
+
+        <section class="panel">
+            <div class="panel__head"><h3>Notifikationer</h3></div>
+
+            <label class="switch-row">
+                <div><strong>Modtag notifikationer</strong><small>Slå alt fra, hvis du vil have ro.</small></div>
+                <span class="switch"><input type="checkbox" name="notifikationer" id="notifMaster" {{ 'checked' if s.notifikationer }}><i></i></span>
+            </label>
+
+            <fieldset class="choice-group" id="notifDetails">
+                <legend>Hvordan vil du have besked?</legend>
+                <label class="choice {{ 'is-selected' if s.kanal == 'app' }}">
+                    <input type="radio" name="kanal" value="app" {{ 'checked' if s.kanal == 'app' }}>
+                    <span class="choice__icon"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/></svg></span>
+                    <span><strong>I appen</strong><small>Push-beskeder og en prik på klokken.</small></span>
+                </label>
+                <label class="choice {{ 'is-selected' if s.kanal == 'email' }}">
+                    <input type="radio" name="kanal" value="email" {{ 'checked' if s.kanal == 'email' }}>
+                    <span class="choice__icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+                    <span><strong>På e-mail</strong><small>Sendes til {{ g.bruger.email }}.</small></span>
+                </label>
+            </fieldset>
+
+            <div class="switch-list" id="notifTypes">
+                <label class="switch-row"><div><strong>Dagens menu</strong><small>Hver morgen kl. 8.</small></div>
+                    <span class="switch"><input type="checkbox" name="notif_menu" {{ 'checked' if s.notif_menu }}><i></i></span></label>
+                <label class="switch-row"><div><strong>Tilbud</strong><small>Når der er et nyt tilbud.</small></div>
+                    <span class="switch"><input type="checkbox" name="notif_tilbud" {{ 'checked' if s.notif_tilbud }}><i></i></span></label>
+                <label class="switch-row"><div><strong>Frokostmakker</strong><small>Når nogen melder sig på dit tidspunkt.</small></div>
+                    <span class="switch"><input type="checkbox" name="notif_makker" {{ 'checked' if s.notif_makker }}><i></i></span></label>
+                <label class="switch-row"><div><strong>Arrangementer</strong><small>Påmindelser om det, du er tilmeldt.</small></div>
+                    <span class="switch"><input type="checkbox" name="notif_events" {{ 'checked' if s.notif_events }}><i></i></span></label>
+                <label class="switch-row"><div><strong>Socialt</strong><small>Når nogen synes godt om dit opslag.</small></div>
+                    <span class="switch"><input type="checkbox" name="notif_social" {{ 'checked' if s.notif_social }}><i></i></span></label>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel__head"><h3>Kostpræference</h3><p class="section__text">Vi markerer de retter i menuen, der passer til dig.</p></div>
+            <div class="chip-group">
+                {% for v, label in [('alt', 'Alt'), ('vegetarisk', 'Vegetarisk'), ('vegansk', 'Vegansk'), ('halal', 'Halal')] %}
+                <label class="chip {{ 'is-selected' if s.kost == v }}"><input type="radio" name="kost" value="{{ v }}" {{ 'checked' if s.kost == v }}>{{ label }}</label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel__head"><h3>Profil</h3></div>
+            <label class="field">Navn<input type="text" name="navn" value="{{ g.bruger.navn }}" required></label>
+            <label class="field">Uddannelse<input type="text" name="uddannelse" value="{{ g.bruger.uddannelse }}"></label>
+            <label class="switch-row">
+                <div><strong>Vis mig i frokostgrupper</strong><small>Andre kan se dit navn, når du spiser med.</small></div>
+                <span class="switch"><input type="checkbox" name="offentlig_profil" {{ 'checked' if s.offentlig_profil }}><i></i></span>
+            </label>
+        </section>
+
+        <div class="settings__actions">
+            <button type="submit" class="btn btn--primary btn--block">Gem indstillinger</button>
+        </div>
+    </form>
+
+    <form method="post" action="{{ url_for('logout') }}" class="settings__logout">
+        <button class="btn btn--ghost-dark btn--block">Log ud</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Grå alt ud, når hovedkontakten er slået fra
+    const master = document.getElementById('notifMaster');
+    const dep = [document.getElementById('notifDetails'), document.getElementById('notifTypes')];
+    const sync = () => dep.forEach(el => el.classList.toggle('is-disabled', !master.checked));
+    master.addEventListener('change', sync); sync();
+    // Markér valgt kanal/kost visuelt
+    document.querySelectorAll('.choice input, .chip input').forEach(inp => inp.addEventListener('change', () => {
+        document.querySelectorAll(`input[name="${inp.name}"]`).forEach(i => i.closest('label').classList.toggle('is-selected', i.checked));
+    }));
+</script>
+{% endblock %}

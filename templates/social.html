@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Socialt{% endblock %}
+
+{% block content %}
+<header class="pagehead" style="--page-bg: url('{{ url_for('static', filename='images/iba-indendoers.jpg') }}')">
+    <div class="pagehead__inner">
+        <p class="hero__eyebrow">Socialt</p>
+        <h1>Mød dine medstuderende</h1>
+        <p class="hero__text">Frokostgrupper, arrangementer og et feed, hvor du kan finde selskab til frokosten.</p>
+    </div>
+</header>
+
+<div class="section social-layout">
+
+    <!-- Frokostmakker -->
+    <section class="panel" id="makker">
+        <div class="panel__head">
+            <h2>Frokostmakker i dag</h2>
+            <p class="section__text">Vælg det tidspunkt, du spiser. Så ved du, hvem du møder ved bordet med skiltet.</p>
+        </div>
+        <div class="slots">
+            {% for g_ in grupper %}
+            <button class="slot {{ 'is-mine' if g_.tid == min_tid }}" data-makker="{{ g_.tid }}">
+                <span class="slot__tid">{{ g_.tid }}</span>
+                <span class="slot__antal">{{ g_.navne|length }} {{ 'person' if g_.navne|length == 1 else 'personer' }}</span>
+                <span class="slot__avatars">
+                    {% for n in g_.navne[:4] %}<i class="avatar avatar--tiny" title="{{ n.navn }}">{{ n.navn|initialer }}</i>{% endfor %}
+                    {% if g_.navne|length > 4 %}<i class="avatar avatar--tiny avatar--more">+{{ g_.navne|length - 4 }}</i>{% endif %}
+                </span>
+                <span class="slot__cta">{{ 'Du er med · tryk for at afmelde' if g_.tid == min_tid else 'Spis med' }}</span>
+            </button>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Feed -->
+    <section class="panel" id="feed">
+        <div class="panel__head">
+            <h2>Opslag</h2>
+            <p class="section__text">Spørg efter selskab, anbefal en ret eller inviter til noget.</p>
+        </div>
+
+        {% if g.bruger %}
+        <form class="composer" id="opslagForm">
+            <span class="avatar">{{ g.bruger.navn|initialer }}</span>
+            <textarea name="tekst" maxlength="280" rows="2" placeholder="Hvad sker der, {{ g.bruger.navn.split()[0] }}? Hvem vil spise kl. 12?" required></textarea>
+            <button type="submit" class="btn btn--primary btn--small">Del</button>
+        </form>
+        {% else %}
+        <a href="{{ url_for('login', next=url_for('social')) }}" class="composer composer--locked">
+            <span class="avatar avatar--ghost">?</span>
+            <span>Log ind for at skrive et opslag</span>
+        </a>
+        {% endif %}
+
+        <div class="feed">
+            {% for o in opslag %}
+            <article class="post">
+                <span class="avatar">{{ o.navn|initialer }}</span>
+                <div class="post__body">
+                    <header><strong>{{ o.navn }}</strong><span>{{ o.uddannelse }} · {{ o.oprettet|relativ_tid }}</span></header>
+                    <p>{{ o.tekst }}</p>
+                    <button class="like {{ 'is-liked' if o.har_liket }}" data-like="{{ o.id }}">
+                        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+                        <span>{{ o.likes }}</span>
+                    </button>
+                </div>
+            </article>
+            {% else %}
+            <p class="empty">Ingen opslag endnu. Vær den første!</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Arrangementer -->
+    <section class="panel panel--wide" id="events">
+        <div class="panel__head">
+            <h2>Arrangementer i kantinen</h2>
+            <p class="section__text">Tilmeld dig, så får du en påmindelse i appen eller på mail.</p>
+        </div>
+        <div class="event-grid">
+            {% for e in arrangementer %}
+            <article class="event">
+                <div class="event__media"><img src="{{ e.billede }}" alt="{{ e.titel }}" loading="lazy">
+                    <span class="event__date"><strong>{{ e.dato|paen_dato }}</strong><span>kl. {{ e.tid }}</span></span>
+                </div>
+                <div class="event__body">
+                    <h3>{{ e.titel }}</h3>
+                    <p>{{ e.beskrivelse }}</p>
+                    <div class="event__footer">
+                        <span class="event__meta"><span data-antal>{{ e.antal }}</span> deltager · {{ e.sted }}</span>
+                        <button class="btn btn--small {{ 'btn--outline' if e.deltager else 'btn--primary' }}" data-event="{{ e.id }}">
+                            {{ 'Afmeld' if e.deltager else 'Deltag' }}
+                        </button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

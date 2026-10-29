@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Log ind' if tab == 'login' else 'Opret profil' }}{% endblock %}
+{% block bodyclass %}body--auth{% endblock %}
+
+{% block content %}
+<section class="auth" style="--auth-bg: url('{{ url_for('static', filename='images/iba-aften.jpg') }}')">
+    <div class="auth__card">
+        <div class="auth__brand">
+            <span class="nav__logo nav__logo--big">CC</span>
+            <div>
+                <strong>Campus Café</strong>
+                <small>IBA Erhvervsakademi Kolding</small>
+            </div>
+        </div>
+
+        <div class="segmented">
+            <a href="{{ url_for('login') }}" class="{{ 'is-active' if tab == 'login' }}">Log ind</a>
+            <a href="{{ url_for('opret') }}" class="{{ 'is-active' if tab == 'opret' }}">Opret profil</a>
+        </div>
+
+        {% if tab == 'login' %}
+        <h1>Velkommen tilbage</h1>
+        <p class="section__text">Log ind for at forudbestille, finde frokostmakkere og følge med i arrangementer.</p>
+        <form method="post" class="form form--plain" action="{{ url_for('login', next=request.args.get('next')) }}">
+            <label class="field">E-mail
+                <input type="email" name="email" placeholder="dit.navn@iba.dk" required autocomplete="email">
+            </label>
+            <label class="field">Kodeord
+                <input type="password" name="password" placeholder="Dit kodeord" required autocomplete="current-password">
+            </label>
+            <button type="submit" class="btn btn--primary btn--block">Log ind</button>
+        </form>
+        <p class="auth__hint">Demo-konto: <code>demo@iba.dk</code> / <code>demo1234</code></p>
+        {% else %}
+        <h1>Bliv en del af fællesskabet</h1>
+        <p class="section__text">Det tager et halvt minut. Du kan altid ændre dine oplysninger under indstillinger.</p>
+        <form method="post" class="form form--plain">
+            <label class="field">Fulde navn
+                <input type="text" name="navn" placeholder="F.eks. Sofie Jensen" required autocomplete="name">
+            </label>
+            <label class="field">E-mail
+                <input type="email" name="email" placeholder="dit.navn@iba.dk" required autocomplete="email">
+            </label>
+            <label class="field">Uddannelse
+                <select name="uddannelse">
+                    <option>Markedsføringsøkonom</option>
+                    <option>Datamatiker</option>
+                    <option>Finansøkonom</option>
+                    <option>Multimediedesigner</option>
+                    <option>Serviceøkonom</option>
+                    <option>Logistikøkonom</option>
+                    <option>Andet</option>
+                </select>
+            </label>
+            <label class="field">Kodeord (mindst 6 tegn)
+                <input type="password" name="password" minlength="6" required autocomplete="new-password">
+            </label>
+            <button type="submit" class="btn btn--primary btn--block">Opret profil</button>
+        </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
